@@ -23,6 +23,9 @@ void* __fastcall idFileResourceCompressed__GetFile(__int64 a1);
 
 
 extern void cmd_mh_spawninfo(idCmdArgs* args);
+extern void cmd_mh_begin_spawn_group(idCmdArgs* args);
+extern void cmd_mh_end_spawn_group(idCmdArgs* args);
+extern void cmd_mh_create_spawn(idCmdArgs* args);
 extern void cmd_mh_ang2mat(idCmdArgs* args);
 
 void cmd_noclip(idCmdArgs* args) {
@@ -56,7 +59,7 @@ void cmd_notarget(idCmdArgs* args){
 	if(notarget_value) {
 		idLib::Printf("Turning notarget on.\n");
 	}
-	else 
+	else
 		idLib::Printf("Disabling notarget\n");
 
 	headattr->set(player, notarget_value);
@@ -99,9 +102,9 @@ static void* find_entity_in_mapfile(const char* entname) {
 
 	auto entityhierarchy_parent = idType::FindClassField("idEntityHierarchy", "parent");
 
-	
+
 	for(int i = 0; i < numentities; ++i) {
-		
+
 		void* current_ent = entities_array[i];
 		/*
 		char* editordata = *(char**)(((char*)current_ent) + editordata_field->offset);
@@ -139,7 +142,7 @@ void cmd_mh_query_type(idCmdArgs* args) {
 	char scratchbuf[2048];
 
 	if(!t){
-	
+
 		auto e = idType::FindEnumInfo(args->argv[1]);
 
 		if(!e) {
@@ -221,7 +224,7 @@ void cmd_mh_printentitydef(idCmdArgs* args) {
 void cmd_mh_dumpmapfile(idCmdArgs* args) {
 	if(args->argc < 2) {
 		idLib::Printf("Not enough args.\n");
-		return;	
+		return;
 	}
 	void* levelmap = call_as<void*>(descan::g_maplocal_getlevelmap, *reinterpret_cast<void**>(descan::g_gamelocal));
 	if(!levelmap) {
@@ -234,7 +237,7 @@ void cmd_mh_dumpmapfile(idCmdArgs* args) {
 }
 
 void cmd_mh_testmapentity(idCmdArgs* args) {
-	
+
 	void* ptr = find_entity_in_mapfile(args->argv[1]);
 
 	idLib::Printf("%p\n", ptr);
@@ -308,7 +311,7 @@ void cmd_current_checkpoint(idCmdArgs* args)
 	// Following chain: idGameSystemLocal->idGameSpawnInfo->checkpointName
 	auto MapChangeReqVar = idType::FindClassField("idGameSystemLocal", "mapChangeRequest");
 	char* idMapInstanceLocal = ((char*)descan::g_idgamesystemlocal + MapChangeReqVar->offset);
-	
+
 	char String[MAX_PATH * 10];
 	// (char*)((*((longlong*)((char*)descan::g_idgamesystemlocal + 0x50))) + 0x1108)
 
@@ -358,6 +361,9 @@ void meathook_init() {
 
 	patch_memory(descan::g_command_patch_area, 4, (char*)&patchval_enable_commands);
 	idCmd::register_command("mh_spawninfo", cmd_mh_spawninfo, "Copy your current position and orientation, formatted as spawnPosition and spawnOrientation to the clipboard");
+	idCmd::register_command("mh_create_spawn", cmd_mh_create_spawn, "Creates a formatted spawn target entity using your current position");
+	idCmd::register_command("mh_begin_spawn_group", cmd_mh_begin_spawn_group, "Begins recording all spawn entitydef names created with mh_create_spawn. End the recording with mh_end_spawn_group");
+	idCmd::register_command("mh_end_spawn_group", cmd_mh_end_spawn_group, "Finishes the recording of spawn group and copies the spawn group entitydef to your clipboard");
 	idCmd::register_command("noclip", cmd_noclip, "Toggle noclip");
 	idCmd::register_command("notarget", cmd_notarget, "Toggle notarget");
 	idCmd::register_command("mh_printentitydef", cmd_mh_printentitydef, "Print the entitydef of the entity with the provided name to the console");
